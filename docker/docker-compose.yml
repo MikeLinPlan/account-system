@@ -1,0 +1,53 @@
+version: '3.4'
+
+services:
+  account-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: account-service
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../data:/data
+      - ../logs:/app/logs
+    environment:
+      - SQL_DSN=root:your_password@tcp(mysql:3306)/account_db
+      - REDIS_CONN_STRING=redis://redis
+      - TZ=Asia/Shanghai
+      - SESSION_SECRET=your_session_secret  # 請修改為隨機字符串
+      # 如果需要使用外部前端，取消下面的註釋
+      # - FRONTEND_BASE_URL=http://your-frontend-url
+    depends_on:
+      - redis
+      - mysql
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:3000/api/status | grep -o '\"success\":\\s*true' | awk -F: '{print $$2}'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    volumes:
+      - redis_data:/data
+
+  mysql:
+    image: mysql:8.2
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: your_password  # 確保與 SQL_DSN 中的密碼匹配
+      MYSQL_DATABASE: account_db
+    volumes:
+      - mysql_data:/var/lib/mysql
+    # 如果需要從外部訪問 MySQL，取消下面的註釋
+    # ports:
+    #   - "3306:3306"
+
+volumes:
+  mysql_data:
+  redis_data:
