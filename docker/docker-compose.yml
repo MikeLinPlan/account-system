@@ -12,6 +12,7 @@ services:
     volumes:
       - ../data:/data
       - ../logs:/app/logs
+      - ../.env:/app/.env
     environment:
       - SQL_DSN=${SQL_DSN}
       - REDIS_CONN_STRING=${REDIS_CONN_STRING}
