@@ -17,14 +17,31 @@ ENV GO111MODULE=on \
 
 WORKDIR /build
 
-# 複製後端依賴文件
-COPY backend/go.mod backend/go.sum ./
-RUN go mod download
+# 安裝必要的工具
+RUN apk add --no-cache git
 
 # 複製後端源代碼
 COPY ./backend .
+
+# 初始化 Go 模块並下載依賴
+RUN go mod init account-system \
+    && go get -u github.com/google/uuid \
+    && go get -u golang.org/x/crypto/bcrypt \
+    && go get -u gorm.io/driver/mysql \
+    && go get -u gorm.io/driver/sqlite \
+    && go get -u gorm.io/gorm \
+    && go get -u github.com/gin-contrib/sessions \
+    && go get -u github.com/gin-contrib/sessions/cookie \
+    && go get -u github.com/gin-gonic/gin \
+    && go get -u golang.org/x/time/rate \
+    && go get -u github.com/gin-contrib/gzip \
+    && go get -u github.com/gin-contrib/static \
+    && go get -u github.com/joho/godotenv \
+    && go mod tidy
+
 # 複製前端構建產物
 COPY --from=frontend-builder /build/dist ./web/dist
+
 # 構建後端
 RUN go build -ldflags "-s -w" -o account-system
 

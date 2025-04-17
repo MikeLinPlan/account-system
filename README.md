@@ -43,9 +43,37 @@ account-system/
 ## 快速開始
 
 1. 克隆本倉庫
-2. 配置環境變數
-3. 運行 `docker-compose up -d`
-4. 訪問 `http://localhost:3000`
+
+2. 進入 Docker 配置目錄：
+   ```bash
+   cd docker
+   ```
+
+3. 複製環境變數檔案並修改：
+   ```bash
+   cp .env.example .env
+   ```
+   編輯 `.env` 檔案，修改 `DB_PASSWORD` 和 `SESSION_SECRET` 為安全的隨機字符串。
+
+4. 運行 Docker Compose：
+   ```bash
+   docker-compose up -d
+   ```
+
+5. 訪問系統：
+   ```
+   http://localhost:3000
+   ```
+
+6. 使用默認管理員帳號登入：
+   - 用戶名：`root`
+   - 密碼：`123456`
+
+   **注意：**首次登入後請立即修改默認密碼！
+
+## 故障排除
+
+如果您在構建或運行過程中遇到問題，請參考 [TROUBLESHOOTING.md](TROUBLESHOOTING.md) 文件。
 
 ## API 文檔
 
