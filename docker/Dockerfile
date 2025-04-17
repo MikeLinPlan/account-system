@@ -33,6 +33,8 @@ RUN go mod tidy
 
 # 複製前端構建產物
 COPY --from=frontend-builder /build/dist ./web/dist
+# 打印 index.html 的內容 (Print content of index.html)
+RUN cat ./web/dist/index.html
 
 # 構建後端
 RUN go build -ldflags "-s -w" -o account-system
