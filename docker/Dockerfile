@@ -28,6 +28,9 @@ RUN go mod download
 # 複製後端源代碼
 COPY ./backend .
 
+# 同步依賴 (Synchronize dependencies)
+RUN go mod tidy
+
 # 複製前端構建產物
 COPY --from=frontend-builder /build/dist ./web/dist
 
