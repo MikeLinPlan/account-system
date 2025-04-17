@@ -17,6 +17,8 @@ func SetRouter(router *gin.Engine, buildFS embed.FS, indexPage []byte) {
 	// 設置 Web 路由
 	frontendBaseUrl := os.Getenv("FRONTEND_BASE_URL")
 	if frontendBaseUrl == "" {
+		// Explicitly unset FRONTEND_BASE_URL if it's empty
+		os.Unsetenv("FRONTEND_BASE_URL")
 		SetWebRouter(router, buildFS, indexPage)
 	} else {
 		frontendBaseUrl = strings.TrimSuffix(frontendBaseUrl, "/")
