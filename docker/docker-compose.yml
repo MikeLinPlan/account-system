@@ -8,17 +8,23 @@ services:
     container_name: account-service
     restart: always
     ports:
-      - "3000:3000"
+      - "${PORT:-3000}:3000"
     volumes:
       - ../data:/data
       - ../logs:/app/logs
     environment:
-      - SQL_DSN=root:your_password@tcp(mysql:3306)/account_db
-      - REDIS_CONN_STRING=redis://redis
-      - TZ=Asia/Shanghai
-      - SESSION_SECRET=your_session_secret  # 請修改為隨機字符串
-      # 如果需要使用外部前端，取消下面的註釋
-      # - FRONTEND_BASE_URL=http://your-frontend-url
+      - SQL_DSN=${SQL_DSN}
+      - REDIS_CONN_STRING=${REDIS_CONN_STRING}
+      - TZ=${TZ:-Asia/Shanghai}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - FRONTEND_BASE_URL=${FRONTEND_BASE_URL}
+      - PASSWORD_LOGIN_ENABLED=${PASSWORD_LOGIN_ENABLED:-true}
+      - PASSWORD_REGISTER_ENABLED=${PASSWORD_REGISTER_ENABLED:-true}
+      - REGISTER_ENABLED=${REGISTER_ENABLED:-true}
+      - EMAIL_VERIFICATION_ENABLED=${EMAIL_VERIFICATION_ENABLED:-false}
+      - GLOBAL_API_RATE_LIMIT_ENABLE=${GLOBAL_API_RATE_LIMIT_ENABLE:-true}
+      - GLOBAL_WEB_RATE_LIMIT_ENABLE=${GLOBAL_WEB_RATE_LIMIT_ENABLE:-true}
+      - GIN_MODE=${GIN_MODE:-release}
     depends_on:
       - redis
       - mysql
@@ -32,6 +38,8 @@ services:
     image: redis:latest
     container_name: redis
     restart: always
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
 
@@ -40,13 +48,12 @@ services:
     container_name: mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: your_password  # 確保與 SQL_DSN 中的密碼匹配
-      MYSQL_DATABASE: account_db
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME:-account_db}
+    ports:
+      - "${DB_PORT:-3306}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-    # 如果需要從外部訪問 MySQL，取消下面的註釋
-    # ports:
-    #   - "3306:3306"
 
 volumes:
   mysql_data:
