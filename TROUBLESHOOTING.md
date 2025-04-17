@@ -1,6 +1,6 @@
 # 故障排除指南
 
-## 構建錯誤：缺少 go.sum 條目
+## 構建錯誤：缺少 go.sum 條目或 go.mod 已存在
 
 如果您在構建 Docker 映像時遇到類似以下的錯誤：
 
@@ -8,27 +8,70 @@
 missing go.sum entry for module providing package github.com/google/uuid (imported by account-system/common)
 ```
 
-這是因為 Go 模塊系統需要 `go.sum` 文件來記錄所有依賴的確切版本。
+或者：
 
-### 解決方案 1：使用修改後的 Dockerfile
+```
+go: /build/go.mod already exists
+```
 
-我們已經修改了 Dockerfile，使其在構建過程中自動初始化 Go 模塊並下載所有依賴。您只需使用最新版本的 Dockerfile 即可。
+這是因為 Go 模塊系統需要正確設置 `go.mod` 和 `go.sum` 文件。
 
-### 解決方案 2：手動初始化 Go 模塊
+### 解決方案 1：生成正確的 go.sum 文件
 
-如果您想在構建 Docker 映像前手動初始化 Go 模塊，可以按照以下步驟操作：
+如果 `go.mod` 文件已存在，但 `go.sum` 文件為空或不完整，您可以按照以下步驟生成正確的 `go.sum` 文件：
 
 1. 進入後端目錄：
    ```bash
    cd backend
    ```
 
-2. 初始化 Go 模塊：
+2. 下載所有依賴並生成 go.sum：
+   ```bash
+   go mod download
+   go mod tidy
+   ```
+
+3. 確認 go.sum 文件已經生成：
+   ```bash
+   cat go.sum
+   ```
+
+4. 返回上一級目錄：
+   ```bash
+   cd ..
+   ```
+
+5. 現在您可以構建 Docker 映像：
+   ```bash
+   docker-compose up -d
+   ```
+
+### 解決方案 2：修改 Dockerfile
+
+我們已經修改了 Dockerfile，使其先複製 `go.mod` 和 `go.sum` 文件，然後下載依賴，最後才複製其他源代碼。這程序符合 Go 模塊的最佳實踐，並利用 Docker 的層級快取機制。
+
+如果依然遇到問題，請確保您使用的是最新版本的 Dockerfile。
+
+### 解決方案 3：完全重新初始化 Go 模塊
+
+如果上述方法仍然不起作用，您可以完全重新初始化 Go 模塊：
+
+1. 進入後端目錄：
+   ```bash
+   cd backend
+   ```
+
+2. 刪除現有的 go.mod 和 go.sum 文件：
+   ```bash
+   rm go.mod go.sum
+   ```
+
+3. 初始化新的 Go 模塊：
    ```bash
    go mod init account-system
    ```
 
-3. 下載所有依賴：
+4. 下載所有依賴：
    ```bash
    go get -u github.com/google/uuid
    go get -u golang.org/x/crypto/bcrypt
@@ -44,22 +87,22 @@ missing go.sum entry for module providing package github.com/google/uuid (import
    go get -u github.com/joho/godotenv
    ```
 
-4. 整理模塊：
+5. 整理模塊：
    ```bash
    go mod tidy
    ```
 
-5. 返回上一級目錄：
+6. 返回上一級目錄：
    ```bash
    cd ..
    ```
 
-6. 現在您可以構建 Docker 映像：
+7. 現在您可以構建 Docker 映像：
    ```bash
    docker-compose up -d
    ```
 
-### 解決方案 3：使用初始化腳本
+### 解決方案 4：使用初始化腳本
 
 我們提供了一個初始化腳本來自動執行上述步驟：
 
