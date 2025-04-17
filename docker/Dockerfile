@@ -12,13 +12,13 @@ RUN DISABLE_ESLINT_PLUGIN='true' bun run build
 FROM golang:alpine AS backend-builder
 
 ENV GO111MODULE=on \
-    CGO_ENABLED=0 \
+    CGO_ENABLED=1 \
     GOOS=linux
 
 WORKDIR /build
 
 # 安裝必要的工具
-RUN apk add --no-cache git
+RUN apk add --no-cache git gcc musl-dev
 
 # 複製 go.mod 和 go.sum
 COPY ./backend/go.mod ./backend/go.sum ./
